@@ -117,11 +117,16 @@ namespace APISirene.Test
         public async Task GetEtablissementsFromApi_ReturnsListOfEtablissementsFromApi()
         {
             // Arrange
+            var codeNaf = "XX"; // Remplacez XX par le code Naf approprié
+            var dateDebut = new DateTime(2023, 01, 01); // Remplacez les valeurs par les dates appropriées
+            var dateFin = new DateTime(2023, 12, 31); // Remplacez les valeurs par les dates appropriées
+
             var expectedEtablissements = new List<Etablissement>
-            {
-                new Etablissement { Id = "1", Score = 10, Siren = "123456789" },
-                new Etablissement { Id = "2", Score = 20, Siren = "987654321" }
-            };
+        {
+            new Etablissement { Id = "1", Score = 10, Siren = "123456789" },
+            new Etablissement { Id = "2", Score = 20, Siren = "987654321" }
+        };
+
             var content = Newtonsoft.Json.JsonConvert.SerializeObject(expectedEtablissements);
             var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -131,7 +136,7 @@ namespace APISirene.Test
             _httpClientMock.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<System.Net.Http.HttpCompletionOption>(), It.IsAny<CancellationToken>())).ReturnsAsync(responseMessage);
 
             // Act
-            var etablissements = await _etablissementService.GetEtablissementsFromApi();
+            var etablissements = await _etablissementService.GetEtablissementsFromApi(codeNaf, dateDebut, dateFin);
 
             // Assert
             CollectionAssert.AreEqual(expectedEtablissements, new List<Etablissement>(etablissements));
@@ -141,11 +146,15 @@ namespace APISirene.Test
         public async Task SaveEtablissementsToDatabase_SuccessfullySavesEtablissements()
         {
             // Arrange
+            var codeNaf = "XX"; // Remplacez XX par le code Naf approprié
+            var dateDebut = new DateTime(2023, 01, 01); // Remplacez les valeurs par les dates appropriées
+            var dateFin = new DateTime(2023, 12, 31); // Remplacez les valeurs par les dates appropriées
+
             var expectedEtablissements = new List<Etablissement>
-            {
-                new Etablissement { Id = "1", Score = 10, Siren = "123456789" },
-                new Etablissement { Id = "2", Score = 20, Siren = "987654321" }
-            };
+        {
+            new Etablissement { Id = "1", Score = 10, Siren = "123456789" },
+            new Etablissement { Id = "2", Score = 20, Siren = "987654321" }
+        };
             _httpClientMock.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
                 {
@@ -155,7 +164,7 @@ namespace APISirene.Test
             _etablissementRepositoryMock.Setup(r => r.AddAsync(It.IsAny<Etablissement>())).Returns(Task.FromResult(new Etablissement()));
 
             // Act
-            await _etablissementService.SaveEtablissementsToDatabase();
+            await _etablissementService.SaveEtablissementsToDatabase(codeNaf, dateDebut, dateFin);
 
             // Assert
             foreach (var etablissement in expectedEtablissements)

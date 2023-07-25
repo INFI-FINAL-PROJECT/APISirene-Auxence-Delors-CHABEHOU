@@ -21,46 +21,45 @@ namespace APISirene.Domain.Services
         }
 
         #region Récupère les Etablissements depuis l'API Sirene
-        public async Task<IEnumerable<Etablissement>> GetEtablissementsFromApi()
+        public async Task<IEnumerable<Etablissement>> GetEtablissementsFromApi(string codeNaf, DateTime dateDebut, DateTime dateFin)
         {
             try
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "799acb30-0560-3826-a941-375cf6d0bd83");
                 _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                var apiUrl = "https://api.insee.fr/entreprises/sirene/siret?debut=0&nombre=20";
+                var apiUrl = $"https://api.insee.fr/entreprises/sirene/V3/siret?q=activitePrincipaleUniteLegale:{codeNaf} AND dateCreationEtablissement:[{dateDebut:yyyy-MM-dd} TO {dateFin:yyyy-MM-dd}]&nombre=1000";
 
                 var response = await _httpClient.GetAsync(apiUrl);
 
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
+                    var apiResponse = JsonConvert.DeserializeObject<SireneApiResponse>(content);
 
-                    var etablissements = JsonConvert.DeserializeObject<IEnumerable<Etablissement>>(content);
-
-                    return etablissements;
+                    return apiResponse.etablissements;
                 }
                 else
                 {
-                    // Gérer les erreurs de la requête à l'API Sirene
-                    throw new Exception("Erreur lors de la récupération des établissements depuis l'API Sirene.");
+                    
+                    throw new Exception("Error while fetching establishments from the Sirene API.");
                 }
             }
             catch (Exception ex)
             {
-                // Gérer les exceptions
-                throw new Exception("Erreur lors de la récupération des établissements depuis l'API Sirene.", ex);
+                
+                throw new Exception("Error while fetching establishments from the Sirene API.", ex);
             }
         }
         #endregion
 
 
         #region Sauvegarde les Etablissements dans la base de données
-        public async Task SaveEtablissementsToDatabase()
+        public async Task SaveEtablissementsToDatabase(string codeNaf, DateTime dateDebut, DateTime dateFin)
         {
             try
             {
-                var etablissements = await GetEtablissementsFromApi();
+                var etablissements = await GetEtablissementsFromApi(codeNaf, dateDebut, dateFin);
 
                 foreach (var etablissement in etablissements)
                 {
@@ -69,7 +68,7 @@ namespace APISirene.Domain.Services
             }
             catch (Exception ex)
             {
-                throw new Exception($"Erreur lors de la sauvegarde des établissements dans la base de données : {ex.Message}");
+                throw new Exception($"Error while saving establishments to the database: {ex.Message}");
             }
         }
         #endregion

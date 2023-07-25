@@ -345,4 +345,19 @@ namespace APISirene.Domain.Models
         public int Page { get; set; }
         public List<Etablissement> Etablissements { get; set; }
     }
+
+    public class SireneApiResponse
+    {
+        public SireneApiHeader header { get; set; }
+        public IEnumerable<Etablissement> etablissements { get; set; }
+    }
+
+    public class SireneApiHeader
+    {
+        public int statut { get; set; }
+        public string message { get; set; }
+        public int total { get; set; }
+        public int debut { get; set; }
+        public int nombre { get; set; }
+    }
 }

@@ -6,19 +6,12 @@ namespace APISirene.Domain.Interfaces.InterfaceService
     public interface IEtablissementService
     {
         Task<IEnumerable<Etablissement>> GetAllEtablissementAsync();
-
         Task<Etablissement> GetEtablissementByIdAsync(string id);
-
         Task<Etablissement> CreateEtablissementAsync(Etablissement etablissement);
-
         Task<bool> UpdateEtablissementAsync(string id, Etablissement etablissement);
-
         Task<bool> DeleteEtablissementAsync(string id);
-
         Task<byte[]> ExportEtablissementsToExcel(ExcelPackage package);
-
-        Task<IEnumerable<Etablissement>> GetEtablissementsFromApi();
-
-        Task SaveEtablissementsToDatabase();
+        Task<IEnumerable<Etablissement>> GetEtablissementsFromApi(string codeNaf, DateTime dateDebut, DateTime dateFin);
+        Task SaveEtablissementsToDatabase(string codeNaf, DateTime dateDebut, DateTime dateFin);
     }
 }

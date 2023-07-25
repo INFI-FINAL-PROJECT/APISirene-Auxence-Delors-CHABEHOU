@@ -41,7 +41,11 @@ namespace APISirene.WebApi.Controllers
         {
             try
             {
-                var etablissements = await _etablissementService.GetEtablissementsFromApi();
+                var codeNaf = "XX"; 
+                var dateDebut = new DateTime(2023, 01, 01); 
+                var dateFin = new DateTime(2023, 12, 31);
+
+                var etablissements = await _etablissementService.GetEtablissementsFromApi(codeNaf, dateDebut, dateFin);
                 if (etablissements == null)
                 {
                     return NotFound();
@@ -50,11 +54,9 @@ namespace APISirene.WebApi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while retrieving etablissements from API: {ex.Message}");
+                return StatusCode(500, $"An error occurred while retrieving establishments from API: {ex.Message}");
             }
         }
-
-
 
 
         [HttpGet("{id}")]
