@@ -38,6 +38,9 @@ public class Program
         builder.Services.AddScoped<IEtablissementRepository, EtablissementRepository>();
         builder.Services.AddScoped<IEtablissementService, EtablissementService>();
 
+        // Ajout du service HttpClient
+        builder.Services.AddHttpClient<IEtablissementService, EtablissementService>();
+
         // Configuration de CORS pour autoriser les requêtes provenant de http://localhost:4200
         builder.Services.AddCors(options =>
         {

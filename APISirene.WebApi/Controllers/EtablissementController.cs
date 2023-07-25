@@ -24,13 +24,37 @@ namespace APISirene.WebApi.Controllers
             try
             {
                 var etablissements = await _etablissementService.GetAllEtablissementAsync();
+                if (etablissements == null)
+                {
+                    return NotFound();
+                }
                 return Ok(etablissements);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while retrieving the etablissements: {ex.Message}");
+                return StatusCode(500, $"An error occurred while retrieving etablissements: {ex.Message}");
             }
         }
+
+        [HttpGet("from-api")]
+        public async Task<IActionResult> GetEtablissementsFromApi()
+        {
+            try
+            {
+                var etablissements = await _etablissementService.GetEtablissementsFromApi();
+                if (etablissements == null)
+                {
+                    return NotFound();
+                }
+                return Ok(etablissements);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while retrieving etablissements from API: {ex.Message}");
+            }
+        }
+
+
 
 
         [HttpGet("{id}")]

@@ -12,10 +12,12 @@ namespace APISirene.Domain.Services
     public class EtablissementService : IEtablissementService
     {
         private readonly IEtablissementRepository _etablissementRepository;
+        private readonly HttpClient _httpClient;
 
-        public EtablissementService(IEtablissementRepository etablissementRepository)
+        public EtablissementService(IEtablissementRepository etablissementRepository, HttpClient httpClient)
         {
             _etablissementRepository = etablissementRepository;
+            _httpClient = httpClient;
         }
 
         #region Récupère les Etablissements depuis l'API Sirene
@@ -23,48 +25,35 @@ namespace APISirene.Domain.Services
         {
             try
             {
-                using (var client = new HttpClient())
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "799acb30-0560-3826-a941-375cf6d0bd83");
+                _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var apiUrl = "https://api.insee.fr/entreprises/sirene/siret?debut=0&nombre=20";
+
+                var response = await _httpClient.GetAsync(apiUrl);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    client.DefaultRequestHeaders.Add("Authorization", "Bearer 799acb30-0560-3826-a941-375cf6d0bd83");
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var content = await response.Content.ReadAsStringAsync();
 
-                    // Utilisation de valeurs constantes pour la requête API
-                    var dateDebut = "2023-01-01";
-                    var dateFin = "2023-07-01";
+                    var etablissements = JsonConvert.DeserializeObject<IEnumerable<Etablissement>>(content);
 
-                    // Formatage des dates au format ISO 8601
-                    var dateDebutFormatee = DateTime.Parse(dateDebut).ToString("yyyy-MM-dd");
-                    var dateFinFormatee = DateTime.Parse(dateFin).ToString("yyyy-MM-dd");
-
-                    var apiUrl = $"https://api.insee.fr/entreprises/sirene/V3/siret=[{dateDebutFormatee}%20TO%20{dateFinFormatee}]";
-
-                    var response = await client.GetAsync(apiUrl);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var content = await response.Content.ReadAsStringAsync();
-
-                        var etablissements = JsonConvert.DeserializeObject<IEnumerable<Etablissement>>(content);
-
-                        return etablissements;
-                    }
-                    else
-                    {
-                        // Gérer la réponse d'erreur de l'API
-                        var messageErreur = await response.Content.ReadAsStringAsync();
-                        throw new Exception($"Erreur lors de la récupération des établissements depuis l'API Sirene. Message : {messageErreur}");
-                    }
+                    return etablissements;
+                }
+                else
+                {
+                    // Gérer les erreurs de la requête à l'API Sirene
+                    throw new Exception("Erreur lors de la récupération des établissements depuis l'API Sirene.");
                 }
             }
             catch (Exception ex)
             {
-                // Gérer toutes les autres exceptions qui pourraient survenir lors de la requête
-                throw new Exception($"Erreur lors de la récupération des établissements depuis l'API Sirene. Message : {ex.Message}");
+                // Gérer les exceptions
+                throw new Exception("Erreur lors de la récupération des établissements depuis l'API Sirene.", ex);
             }
         }
-
-
         #endregion
+
 
         #region Sauvegarde les Etablissements dans la base de données
         public async Task SaveEtablissementsToDatabase()

@@ -16,5 +16,7 @@ namespace APISirene.Domain.Interfaces.InterfaceService
         Task<bool> DeleteEtablissementAsync(string id);
 
         Task<byte[]> ExportEtablissementsToExcel(ExcelPackage package);
+
+        Task<IEnumerable<Etablissement>> GetEtablissementsFromApi();
     }
 }
