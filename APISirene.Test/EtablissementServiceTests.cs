@@ -117,9 +117,9 @@ namespace APISirene.Test
         public async Task GetEtablissementsFromApi_ReturnsListOfEtablissementsFromApi()
         {
             // Arrange
-            var codeNaf = "XX"; // Remplacez XX par le code Naf approprié
-            var dateDebut = new DateTime(2023, 01, 01); // Remplacez les valeurs par les dates appropriées
-            var dateFin = new DateTime(2023, 12, 31); // Remplacez les valeurs par les dates appropriées
+            var codeNaf = "XX"; 
+            var dateDebut = new DateTime(2023, 01, 01); 
+            var dateFin = new DateTime(2023, 12, 31); 
 
             var expectedEtablissements = new List<Etablissement>
         {
@@ -146,9 +146,9 @@ namespace APISirene.Test
         public async Task SaveEtablissementsToDatabase_SuccessfullySavesEtablissements()
         {
             // Arrange
-            var codeNaf = "XX"; // Remplacez XX par le code Naf approprié
-            var dateDebut = new DateTime(2023, 01, 01); // Remplacez les valeurs par les dates appropriées
-            var dateFin = new DateTime(2023, 12, 31); // Remplacez les valeurs par les dates appropriées
+            var codeNaf = "XX"; 
+            var dateDebut = new DateTime(2023, 01, 01); 
+            var dateFin = new DateTime(2023, 12, 31); 
 
             var expectedEtablissements = new List<Etablissement>
         {
