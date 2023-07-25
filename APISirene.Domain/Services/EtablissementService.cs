@@ -19,45 +19,72 @@ namespace APISirene.Domain.Services
         }
 
         #region Récupère les Etablissements depuis l'API Sirene
-        public async Task<IEnumerable<Etablissement>> GetEtablissementsFromApi(string startDate, string endDate)
+        public async Task<IEnumerable<Etablissement>> GetEtablissementsFromApi()
         {
-            using (var client = new HttpClient())
+            try
             {
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer 799acb30-0560-3826-a941-375cf6d0bd83");
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                var apiUrl = $"https://api.insee.fr/entreprises/sirene/V3/siret?periode(etatAdministratifUniteLegale)=A&periode(dateDernierTraitementUniteLegale)=[{startDate}%20TO%20{endDate}]";
-
-                var response = await client.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
+                using (var client = new HttpClient())
                 {
-                    var content = await response.Content.ReadAsStringAsync();
+                    client.DefaultRequestHeaders.Add("Authorization", "Bearer 799acb30-0560-3826-a941-375cf6d0bd83");
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                    var etablissements = JsonConvert.DeserializeObject<IEnumerable<Etablissement>>(content);
+                    // Utilisation de valeurs constantes pour la requête API
+                    var dateDebut = "2023-01-01";
+                    var dateFin = "2023-07-01";
 
-                    return etablissements;
-                }
-                else
-                {
-                    // Gérer les erreurs de la requête à l'API Sirene
-                    throw new Exception("Erreur lors de la récupération des établissements depuis l'API Sirene.");
+                    // Formatage des dates au format ISO 8601
+                    var dateDebutFormatee = DateTime.Parse(dateDebut).ToString("yyyy-MM-dd");
+                    var dateFinFormatee = DateTime.Parse(dateFin).ToString("yyyy-MM-dd");
+
+                    var apiUrl = $"https://api.insee.fr/entreprises/sirene/V3/siret=[{dateDebutFormatee}%20TO%20{dateFinFormatee}]";
+
+                    var response = await client.GetAsync(apiUrl);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+
+                        var etablissements = JsonConvert.DeserializeObject<IEnumerable<Etablissement>>(content);
+
+                        return etablissements;
+                    }
+                    else
+                    {
+                        // Gérer la réponse d'erreur de l'API
+                        var messageErreur = await response.Content.ReadAsStringAsync();
+                        throw new Exception($"Erreur lors de la récupération des établissements depuis l'API Sirene. Message : {messageErreur}");
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                // Gérer toutes les autres exceptions qui pourraient survenir lors de la requête
+                throw new Exception($"Erreur lors de la récupération des établissements depuis l'API Sirene. Message : {ex.Message}");
+            }
         }
+
+
         #endregion
 
         #region Sauvegarde les Etablissements dans la base de données
-        public async Task SaveEtablissementsToDatabase(string startDate, string endDate)
+        public async Task SaveEtablissementsToDatabase()
         {
-            var etablissements = await GetEtablissementsFromApi(startDate, endDate);
-
-            foreach (var etablissement in etablissements)
+            try
             {
-                await _etablissementRepository.AddAsync(etablissement);
+                var etablissements = await GetEtablissementsFromApi();
+
+                foreach (var etablissement in etablissements)
+                {
+                    await _etablissementRepository.AddAsync(etablissement);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erreur lors de la sauvegarde des établissements dans la base de données : {ex.Message}");
             }
         }
         #endregion
+
 
         #region Exporte les Etablissements au format Excel
         public async Task<byte[]> ExportEtablissementsToExcel(ExcelPackage package)

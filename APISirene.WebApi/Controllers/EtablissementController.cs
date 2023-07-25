@@ -18,6 +18,21 @@ namespace APISirene.WebApi.Controllers
             _etablissementService = etablissementService;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllEtablissements()
+        {
+            try
+            {
+                var etablissements = await _etablissementService.GetAllEtablissementAsync();
+                return Ok(etablissements);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while retrieving the etablissements: {ex.Message}");
+            }
+        }
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetEtablissementById(string id)
         {
@@ -33,20 +48,6 @@ namespace APISirene.WebApi.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"An error occurred while retrieving the etablissement: {ex.Message}");
-            }
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAllEtablissements()
-        {
-            try
-            {
-                var etablissements = await _etablissementService.GetAllEtablissementAsync();
-                return Ok(etablissements);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while retrieving the etablissements: {ex.Message}");
             }
         }
 
@@ -107,10 +108,42 @@ namespace APISirene.WebApi.Controllers
             {
                 using (var package = new ExcelPackage())
                 {
-                    var fileContents = await _etablissementService.ExportEtablissementsToExcel(package);
-                    var fileName = "etablissements.xlsx";
+                    // Récupérer les établissements à exporter depuis le service
+                    var etablissements = await _etablissementService.GetAllEtablissementAsync();
 
-                    return File(fileContents, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                    // Vérifier s'il y a des établissements à exporter
+                    if (etablissements != null && etablissements.Any())
+                    {
+                        var worksheet = package.Workbook.Worksheets.Add("Etablissements");
+
+                        // Add headers
+                        worksheet.Cells[1, 1].Value = "ID";
+                        worksheet.Cells[1, 2].Value = "Score";
+                        worksheet.Cells[1, 3].Value = "Siren";
+
+                        // Add data
+                        var row = 2;
+                        foreach (var etablissement in etablissements)
+                        {
+                            worksheet.Cells[row, 1].Value = etablissement.Id;
+                            worksheet.Cells[row, 2].Value = etablissement.Score;
+                            worksheet.Cells[row, 3].Value = etablissement.Siren;
+
+                            row++;
+                        }
+
+                        // Save the Excel package to a byte array
+                        var fileContents = package.GetAsByteArray();
+                        var fileName = "etablissements.xlsx";
+
+                        // Return the Excel file as a FileContentResult
+                        return File(fileContents, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                    }
+                    else
+                    {
+                        // Handle the case when no data is available to export
+                        return NotFound("No data available to export.");
+                    }
                 }
             }
             catch (Exception ex)
@@ -118,6 +151,7 @@ namespace APISirene.WebApi.Controllers
                 return StatusCode(500, $"An error occurred while exporting the etablissements to Excel: {ex.Message}");
             }
         }
+
 
     }
 }

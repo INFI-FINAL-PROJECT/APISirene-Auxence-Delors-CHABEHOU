@@ -5,6 +5,7 @@ using APISirene.Infrastructure.Data;
 using APISirene.Infrastructure.Repository;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
+using OfficeOpenXml;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Reflection;
 
@@ -21,6 +22,8 @@ public class Program
 
         // Création d'une instance de MongoClient en utilisant la chaine de connexion
         var client = new MongoClient(connectionString);
+
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
         // Récupération de la base de données MongoDB
         var database = client.GetDatabase(databaseName);
