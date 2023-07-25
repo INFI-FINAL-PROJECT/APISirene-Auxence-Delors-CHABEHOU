@@ -18,5 +18,7 @@ namespace APISirene.Domain.Interfaces.InterfaceService
         Task<byte[]> ExportEtablissementsToExcel(ExcelPackage package);
 
         Task<IEnumerable<Etablissement>> GetEtablissementsFromApi();
+
+        Task SaveEtablissementsToDatabase();
     }
 }
